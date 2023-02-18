@@ -1,0 +1,42 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres:13.1
+    privileged: true
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: django
+      POSTGRES_PASSWORD: geekbrains
+      POSTGRES_DB: TODO-Notes
+  backend:
+    build:
+      context: .
+    expose:
+      - 8080
+    command: bash -c "
+      ./wait-for-postgres.sh db
+      && python manage.py makemigrations --merge
+      && python manage.py migrate
+      && export DJANGO_SUPERUSER_USERNAME=django
+      && export DJANGO_SUPERUSER_EMAIL=test@test.com
+      && export DJANGO_SUPERUSER_PASSWORD=geekbrains
+      && python manage.py createsuperuser --no-input
+      && gunicorn config.wsgi -b 0.0.0.0:8080
+      "
+    depends_on:
+      - db
+  nginx:
+    build: ./nginx
+    ports:
+    - 8000:80
+    depends_on:
+    - backend
+  frontend:
+    build: ./frontend
+    ports:
+    - 80:80
+    depends_on:
+    - nginx

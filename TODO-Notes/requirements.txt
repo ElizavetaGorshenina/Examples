@@ -1,0 +1,10 @@
+djangorestframework
+markdown
+django-filter
+django-cors-headers
+mixer
+drf-yasg
+graphene-django
+djangorestframework-simplejwt
+psycopg2==2.8.6
+drf-writable-nested
